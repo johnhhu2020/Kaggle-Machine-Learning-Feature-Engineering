@@ -174,7 +174,7 @@ SELECT * FROM candidate_name;
 SELECT * FROM candidate_vote;
 
 SELECT c.name FROM candidate_name c WHERE c.id = (
-    SELECT COUNT(v.candidate_id) AS cc FROM candidate_vote v GROUP BY v.candidate_id ORDER BY cc DESC LIMIT 1
+    SELECT COUNT(v.candidate_id) AS d FROM candidate_vote v GROUP BY v.candidate_id ORDER BY d DESC LIMIT 1
     ); AND c.id = cc; IN (
     SELECT c.id FROM candidate_name c);
         COUNT(DISTINCT v.candidate_id)=2);
@@ -194,12 +194,28 @@ SELECT a.emp_id, a.name, a.supervisor, a.salary FROM employee_salary a
 RIGHT JOIN (SELECT emp_id, bonus FROM employee_bonus) b ON b.emp_id = a.emp_id
 WHERE b.bonus >= 1000;
 
-SELECT a.*, b.bonus FROM employee_salary a
-LEFT JOIN employee_bonus b ON b.emp_id = a.emp_id
+SELECT a.*, b.bonus FROM employee_salary a LEFT JOIN employee_bonus b ON b.emp_id = a.emp_id
 WHERE bonus <= 1000 OR bonus IS NULL;
 
 
 ------------------------577. Employee Bonus----------------------------------
+
+
+SELECT * FROM question_answer_2;
+
+SELECT question_id FROM question_answer WHERE question_id = (
+SELECT COUNT(question_id) AS vv FROM question_answer GROUP BY question_id ORDER BY vv DESC  LIMIT 1);
+
+SELECT question_id FROM question_answer_2 WHERE action = 'answer';
+
+SELECT question_id FROM question_answer_2 WHERE action = 'answer' AND question_id = (
+    SELECT COUNT(f.question_id) AS v FROM question_answer_2 f GROUP BY f.question_id ORDER BY v DESC LIMIT 1);
+
+SELECT question_id FROM question_answer_2 WHERE action = 'answer' GROUP BY question_id
+ORDER BY COUNT(question_id) DESC LIMIT 2;
+
+
+------------------------578 Get Highest Answer Rate Question-----------------
 
 
 SELECT * FROM customer_referee
