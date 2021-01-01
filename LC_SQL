@@ -215,7 +215,24 @@ SELECT question_id FROM question_answer_2 WHERE action = 'answer' GROUP BY quest
 ORDER BY COUNT(question_id) DESC LIMIT 2;
 
 
-------------------------578 Get Highest Answer Rate Question-----------------
+------------------------578 Get Highest Answer Rate Question-----------------**************
+
+
+SELECT * FROM dept_student;
+SELECT * FROM student_dept;
+
+SELECT DISTINCT ds.dept_name, COUNT(DISTINCT sd.student_id) AS stu_num FROM dept_student ds
+    LEFT JOIN student_dept sd on ds.dept_id = sd.dept_id GROUP BY ds.dept_name;
+
+SELECT DISTINCT ds.dept_name, COUNT(DISTINCT sd.student_id) AS vv
+FROM dept_student ds,student_dept sd WHERE ds.dept_id=sd.dept_id GROUP BY ds.dept_name;
+
+SELECT D.dept_name, COUNT(S.student_id) AS student_number
+FROM dept_student AS D LEFT JOIN student_dept AS S ON D.dept_id = S.dept_id
+GROUP BY D.dept_name ORDER BY student_number DESC, D.dept_name;
+
+
+------------------------580 Count Student Number in Departments-------------****
 
 
 SELECT * FROM customer_referee
