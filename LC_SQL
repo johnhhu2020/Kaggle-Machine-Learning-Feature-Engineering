@@ -390,8 +390,8 @@ ELSE 'no' END AS 'triangle'  FROM triangle_problem;
 
 SELECT * FROM short_distance_2;
 
-SELECT
-FROM short_distance_2;
+SELECT SQRT(x*x+y*y) AS shortest_distance
+FROM short_distance_2; HAVING MIN(SQRT(x*x+y*y))<>0;
 
 
 ------------------------612 Shortest Distance in a Plane-------------------------------------
