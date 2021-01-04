@@ -397,7 +397,7 @@ SELECT SQRT((a.x-b.x)*(a.x-b.x)+(a.y-b.y)*(a.y-b.y)) AS shortest_distance
 FROM short_distance_2 a, short_distance_2 b HAVING shortest_distance>0 ORDER BY shortest_distance LIMIT 1;
 
 
-------------------------612 Shortest Distance in a Plane-------------------------------------
+------------------------612 Shortest Distance in a Plane-------------------------------------***
 
 
 --We can cross join point table with itself to generate all possible pairs of points.
@@ -407,6 +407,21 @@ SELECT MIN(a.x - b.x) AS shortest FROM short_distance a, short_distance b WHERE 
 
 
 ------------------------613. Shortest Distance in a Line-------------------------------------
+
+
+SELECT * FROM second_follower;
+
+SELECT IF(follower IN (SELECT followee FROM second_follower),follower) AS second_follower
+FROM second_follower;???????
+
+SELECT followee,COUNT(follower) AS foll FROM second_follower WHERE followee IN
+(SELECT follower FROM second_follower) GROUP BY followee;
+
+SELECT follower,(SELECT COUNT(follower) FROM second_follower GROUP BY followee) AS foll
+FROM second_follower WHERE follower IN (SELECT followee FROM second_follower) GROUP BY follower;
+
+
+------------------------614 Second Degree Follower-------------------------------------------********
 
 
 SELECT * FROM biggest_num;
@@ -427,11 +442,20 @@ SELECT * FROM boring_movies WHERE MOD(id,2) = 1 AND description <> 'boring';
 ------------------------620. Not Boring Movies-----------------------------------------------
 
 
+SELECT * FROM change_seats;
+
+SELECT ;
+
+
+------------------------626. Exchange Seats--------------------------------------------------
+
+
 SELECT * FROM salary_swap;
 
 UPDATE salary_swap SET sex = ( CASE WHEN sex = 'f' THEN 'm' WHEN sex = 'm' THEN 'f' END );
 
 UPDATE salary_swap SET sex = IF(sex = 'm', 'f', 'm') ;
+
 
 ------------------------627. Swap Salary-----------------------------------------------------
 
