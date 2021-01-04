@@ -444,10 +444,19 @@ SELECT * FROM boring_movies WHERE MOD(id,2) = 1 AND description <> 'boring';
 
 SELECT * FROM change_seats;
 
-SELECT ;
+SELECT b.id, IF(a.id-b.id=1,b.student,a.student) AS new_stu FROM change_seats a,change_seats b;
+
+SELECT IF(MOD(b.id,2)=0,b.id+1,IF(MOD(b.id,2)=1,b.id+1,b.id-1)) AS id_2,b.student FROM change_seats b;
+
+SELECT IF(MOD(id,2)=1,id+1,IF(MOD(id,2)=0,id-1,id+1)) AS id_2,student FROM change_seats;
+
+SELECT (CASE WHEN id % 2 = 1 AND id != C THEN id+1
+             WHEN id % 2 = 1 AND id  = C THEN id
+             ELSE id-1 END) AS id,student
+FROM change_seats,(SELECT COUNT(1) AS C FROM change_seats) AS T ORDER BY id;
 
 
-------------------------626. Exchange Seats--------------------------------------------------
+------------------------626. Exchange Seats--------------------------------------------------*****
 
 
 SELECT * FROM salary_swap;
