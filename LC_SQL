@@ -456,7 +456,7 @@ SELECT (CASE WHEN id % 2 = 1 AND id != C THEN id+1
 FROM change_seats,(SELECT COUNT(1) AS C FROM change_seats) AS T ORDER BY id;
 
 
-------------------------626. Exchange Seats--------------------------------------------------*****
+------------------------626. Exchange Seats--------------------------------------------------*******
 
 
 SELECT * FROM salary_swap;
@@ -467,6 +467,21 @@ UPDATE salary_swap SET sex = IF(sex = 'm', 'f', 'm') ;
 
 
 ------------------------627. Swap Salary-----------------------------------------------------
+
+
+SELECT * FROM customer_product;
+
+SELECT customer_id FROM customer_product WHERE product_id IN (
+    SELECT product_id FROM customer_product GROUP BY product_id);
+
+SELECT customer_id FROM customer_product GROUP BY customer_id HAVING COUNT(DISTINCT product_id) = (
+    SELECT COUNT(DISTINCT product_id) FROM customer_product);------------------
+
+SELECT customer_id FROM customer_product GROUP BY customer_id
+HAVING COUNT(DISTINCT product_id) = (SELECT COUNT(DISTINCT product_id) FROM customer_product);
+
+
+------------------------1045 Customers Who Bought All Products-------------------------------**********
 
 
 SELECT * FROM actor_director;
@@ -491,6 +506,20 @@ SELECT product_id,SUM(quantity) AS qual FROM product_sales GROUP BY product_id;
 ------------------------1069 Product Sales Analysis II---------------------------------------
 
 
+SELECT * FROM product_sales;
+
+SELECT * FROM product_product;
+
+SELECT DISTINCT product_id,year AS first_year,quantity,price FROM product_sales_2
+WHERE year IN (SELECT MIN(year) FROM product_sales_2 GROUP BY year);
+
+SELECT product_id,year AS first_year,quantity,price FROM product_sales_2
+WHERE (product_id,year) IN (SELECT product_id,MIN(year) FROM product_sales_2 GROUP BY product_id);
+
+
+------------------------1070 Product Sales Analysis III--------------------------------------
+
+
 SELECT pp.project_id, AVG(experience_years) AS avg_exp FROM project_project pp
 LEFT JOIN project_employee pe ON pe.employee_id = pp.employee_id GROUP BY pp.project_id;
 
@@ -507,7 +536,17 @@ SELECT project_id FROM project_project GROUP BY project_id HAVING COUNT(employee
 (SELECT COUNT(employee_id) AS emp FROM project_project GROUP BY project_id ORDER BY emp DESC LIMIT 1);
 
 
-------------------------1076 Project Employees II--------------------------------**********************
+------------------------1076 Project Employees II--------------------------------********************
+
+
+SELECT * FROM project_project;
+
+SELECT * FROM project_employee;
+
+SELECT ;
+
+
+------------------------1077 Project Employees III-------------------------------
 
 
 SELECT * FROM sales_sales;
