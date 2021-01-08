@@ -607,9 +607,19 @@ SELECT * FROM book_order;
 
 SELECT b.book_id,b.name FROM book_book b WHERE b.book_id IN (
     SELECT o.book_id FROM book_order o WHERE DATEDIFF('2019-06-23',o.dispatch_date)<365
-    GROUP BY o.book_id HAVING SUM(o.quantity)<10);
+    GROUP BY o.book_id HAVING SUM(o.quantity)<10);-----------------------------------------
 
-SELECT b.book_id,b.name FROM book_book b WHERE DATEDIFF('2019-06-23',b.available_from)<365;
+SELECT b.book_id,b.name FROM book_book b WHERE b.book_id IN (
+    SELECT o.book_id FROM book_order o WHERE DATEDIFF('2019-06-23',o.dispatch_date)<365
+    GROUP BY o.book_id HAVING SUM(IF(o.quantity IS NULL,0,SUM(o.quantity))<10; OR IFNULL(o.quantity,o.book_id));
+
+SELECT b.book_id,b.name FROM book_book b WHERE b.book_id NOT IN (
+    SELECT o.book_id FROM book_order o WHERE DATEDIFF('2019-06-23',o.dispatch_date)>365
+                                         OR DATEDIFF(2019-06-23,b.available_from)<30
+    GROUP BY o.book_id HAVING SUM(o.quantity)>10);-----------------------------------------
+
+SELECT b.book_id,b.name FROM book_book b LEFT JOIN book_order o ON o.book_id=b.book_id
+WHERE DATEDIFF('2019-06-23',o.dispatch_date)<365 GROUP BY b.book_id,b.name;----------------
  AND DATEDIFF(2019-06-23,b.available_from)>30 AND b.book_id IN (
     SELECT o.book_id FROM book_order o
     GROUP BY o.book_id HAVING SUM(o.quantity)<10);
