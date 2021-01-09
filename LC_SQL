@@ -615,8 +615,8 @@ SELECT b.book_id,b.name FROM book_book b WHERE b.book_id IN (
 
 SELECT b.book_id,b.name FROM book_book b WHERE b.book_id NOT IN (
     SELECT o.book_id FROM book_order o WHERE DATEDIFF('2019-06-23',o.dispatch_date)>365
-                                         OR DATEDIFF(2019-06-23,b.available_from)<30
-    GROUP BY o.book_id HAVING SUM(o.quantity)>10);-----------------------------------------
+                                         OR DATEDIFF('2019-06-23',b.available_from)<30
+    GROUP BY o.book_id HAVING SUM(o.quantity)>10);----------------------------------------------------------------
 
 SELECT b.book_id,b.name FROM book_book b LEFT JOIN book_order o ON o.book_id=b.book_id
 WHERE DATEDIFF('2019-06-23',o.dispatch_date)<365 GROUP BY b.book_id,b.name;----------------
@@ -631,6 +631,24 @@ GROUP BY B.book_id HAVING SUM(IF(O.quantity IS NULL, 0, O.quantity)) < 10;
 
 
 ------------------------1098 Unpopular Books--------------------------------------***********
+
+
+SELECT * FROM user_count;
+
+SELECT user_id,activity_date AS 'login_date' FROM user_count WHERE DATEDIFF('2019-06-30',activity_date)<90
+AND activity='login' AND activity_date IN (SELECT MIN(activity_date) FROM user_count WHERE activity='login'
+GROUP BY user_id);
+
+SELECT user_id,login_date FROM
+    (SELECT b.user_id,MIN(b.activity_date) AS login_date FROM user_count b WHERE b.activity='login'
+    GROUP BY b.user_id) v WHERE DATEDIFF('2019-06-30',login_date)<90;
+
+SELECT login_date,COUNT(user_id) AS 'user_count' FROM
+    (SELECT b.user_id,MIN(b.activity_date) AS login_date FROM user_count b WHERE b.activity='login'
+    GROUP BY b.user_id) v WHERE DATEDIFF('2019-06-30',login_date)<90 GROUP BY login_date;
+
+
+------------------------1107.New Users Daily Count--------------------------------*****************
 
 
 SELECT * FROM post_report;
