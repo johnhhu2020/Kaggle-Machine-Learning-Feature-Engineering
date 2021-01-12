@@ -555,18 +555,14 @@ SELECT project_id FROM project_project GROUP BY project_id HAVING COUNT(employee
 SELECT * FROM project_project;
 SELECT * FROM project_employee;
 
-SELECT p.project_id,p.employee_id FROM project_project p WHERE (p.project_id,p.employee_id) = (
-    SELECT p.project_id,e.employee_id FROM project_project p LEFT JOIN project_employee e
-        ON p.employee_id=e.employee_id
-    WHERE (p.project_id, e.experience_years) = (p.project_id,MAX(e.experience_years))) GROUP BY p.project_id;
-    );
+SELECT p.project_id,p.employee_id,e.experience_years FROM project_project p LEFT JOIN project_employee_2 e
+    ON p.employee_id=e.employee_id WHERE (p.project_id,e.experience_years) IN (
+    SELECT e.employee_id,MAX(e.experience_years) FROM project_employee_2 e GROUP BY e.employee_id);-----------xxxxx---
+GROUP BY p.project_id,e.employee_id;
 
-SELECT p.project_id,p.employee_id,e.experience_years FROM project_project p,project_employee e
-WHERE (p.employee_id,e.experience_years) IN (
-    SELECT p.project_id,MAX(e.experience_years) FROM project_project p,project_employee e GROUP BY p.project_id); LEFT JOIN project_employee e
-        ON p.employee_id=e.employee_id
-    WHERE (p.project_id, e.experience_years) = (p.project_id,MAX(e.experience_years))); GROUP BY p.project_id
-    );
+SELECT p.project_id,p.employee_id,e.experience_years FROM project_project p LEFT JOIN project_employee_2 e
+    ON p.employee_id=e.employee_id WHERE (p.project_id,e.experience_years) IN (
+    SELECT p.project_id,MAX(e.experience_years) FROM project_project p,project_employee_2 e GROUP BY p.project_id);-------------
 
 
 ------------------------1077 Project Employees III-------------------------------**********************
@@ -607,16 +603,28 @@ SELECT * FROM book_order;
 
 SELECT b.book_id,b.name FROM book_book b WHERE b.book_id IN (
     SELECT o.book_id FROM book_order o WHERE DATEDIFF('2019-06-23',o.dispatch_date)<365
-    GROUP BY o.book_id HAVING SUM(o.quantity)<10);-----------------------------------------
+    AND DATEDIFF('2019-06-23',b.available_from)>30
+    GROUP BY o.book_id HAVING SUM(o.quantity)<10);-------------------vvvvvv
 
-SELECT b.book_id,b.name FROM book_book b WHERE b.book_id IN (
-    SELECT o.book_id FROM book_order o WHERE DATEDIFF('2019-06-23',o.dispatch_date)<365
-    GROUP BY o.book_id HAVING SUM(IF(o.quantity IS NULL,0,SUM(o.quantity))<10; OR IFNULL(o.quantity,o.book_id));
+SELECT b.book_id,b.name FROM book_book b,book_order o WHERE b.book_id IN (
+    SELECT b.book_id FROM book_order o LEFT JOIN book_book b ON b.book_id=o.book_id
+    WHERE DATEDIFF('2019-06-23',b.available_from)>30 AND DATEDIFF('2019-06-23',o.dispatch_date)<365)
+    GROUP BY b.book_id HAVING SUM(IF(o.quantity IS NULL,0,o.quantity))<10;
+
+SELECT b.book_id,b.name,SUM(o.quantity) FROM book_book b,book_order o WHERE b.book_id IN (
+    SELECT o.book_id FROM book_order o,book_book b WHERE DATEDIFF('2019-06-23',o.dispatch_date)>365
+                                         AND DATEDIFF('2019-06-23',b.available_from)<30
+    GROUP BY o.book_id HAVING SUM(o.quantity)<10;------------------------vvvvv---------------SUBQUERRY-JOIN?--------
 
 SELECT b.book_id,b.name FROM book_book b WHERE b.book_id NOT IN (
-    SELECT o.book_id FROM book_order o WHERE DATEDIFF('2019-06-23',o.dispatch_date)>365
-                                         OR DATEDIFF('2019-06-23',b.available_from)<30
-    GROUP BY o.book_id HAVING SUM(o.quantity)>10);----------------------------------------------------------------
+    SELECT o.book_id FROM book_order o,book_book b WHERE DATEDIFF('2019-06-23',o.dispatch_date)<365
+                                         AND DATEDIFF('2019-06-23',b.available_from)>30
+    GROUP BY o.book_id HAVING SUM(IF(o.quantity IS NULL,0,o.quantity))>10) GROUP BY b.book_id,b.name;--------------?????????-------vvvv----
+
+SELECT b.book_id,b.name FROM book_book b WHERE b.book_id NOT IN (
+    SELECT o.book_id FROM book_order o LEFT JOIN book_book b ON b.book_id=o.order_id
+    WHERE DATEDIFF('2019-06-23',o.dispatch_date)<365 AND DATEDIFF('2019-06-23',b.available_from)>30
+    GROUP BY o.book_id HAVING SUM(IF(o.quantity IS NULL,0,o.quantity))<10);-------
 
 SELECT b.book_id,b.name FROM book_book b LEFT JOIN book_order o ON o.book_id=b.book_id
 WHERE DATEDIFF('2019-06-23',o.dispatch_date)<365 GROUP BY b.book_id,b.name;----------------
@@ -624,13 +632,28 @@ WHERE DATEDIFF('2019-06-23',o.dispatch_date)<365 GROUP BY b.book_id,b.name;-----
     SELECT o.book_id FROM book_order o
     GROUP BY o.book_id HAVING SUM(o.quantity)<10);
 
-SELECT B.book_id, B.name FROM book_book AS B LEFT JOIN book_order O
-ON O.book_id = B.book_id AND O.dispatch_date BETWEEN '2018-06-23' AND '2019-06-23'
-WHERE DATEDIFF('2019-06-23', B.available_from) > 30
-GROUP BY B.book_id HAVING SUM(IF(O.quantity IS NULL, 0, O.quantity)) < 10;
+SELECT b.book_id,b.name FROM book_book b LEFT JOIN book_order o
+ON o.book_id = b.book_id WHERE DATEDIFF('2019-06-23',o.dispatch_date)<365
+AND DATEDIFF('2019-06-23',b.available_from) > 30
+GROUP BY b.book_id HAVING SUM(IF(o.quantity IS NULL,0, o.quantity)) < 10;---------------xxxxxxxxxxxx
+
+SELECT book_id,name FROM book_book WHERE DATEDIFF('2019-06-23',available_from)>30;
+AND book_id NOT IN (SELECT DISTINCT book_id FROM book_order
+WHERE DATEDIFF('2019-06-23',dispatch_date)<365
+GROUP BY book_id HAVING SUM(IF(quantity IS NULL,0,quantity))>10);-------------------vvvvvvvvvvv---------
+
+SELECT b.book_id,b.name,o.quantity AS quantity FROM book_book b,book_order o
+WHERE DATEDIFF('2019-06-23',b.available_from)>30
+AND DATEDIFF('2019-06-23',o.dispatch_date)<365;
+GROUP BY b.book_id,b.name; HAVING SUM(IF(o.quantity IS NULL,0,o.quantity))<10;----------------
+
+SELECT b.book_id,b.name,SUM(o.quantity) AS quantity FROM book_book b LEFT JOIN book_order o ON b.book_id=o.book_id
+WHERE DATEDIFF('2019-06-23',b.available_from)>30
+AND IF(o.dispatch_date IS NULL,0,DATEDIFF('2019-06-23',o.dispatch_date))<365
+GROUP BY b.book_id, b.name HAVING SUM(IF(o.quantity IS NULL,0,o.quantity))<10;------------------------------------------
 
 
-------------------------1098 Unpopular Books--------------------------------------***********
+------------------------1098 Unpopular Books--------------------------------------*****************
 
 
 SELECT * FROM user_count;
@@ -651,6 +674,43 @@ SELECT login_date,COUNT(user_id) AS 'user_count' FROM
 ------------------------1107.New Users Daily Count--------------------------------*****************
 
 
+SELECT * FROM student_grade_2;
+
+SELECT student_id,MAX(grade) AS max_grade,MIN(course_id) AS course_id FROM student_grade_2
+GROUP BY student_id ORDER BY student_id;
+
+SELECT student_id,MIN(course_id),(
+    SELECT MAX(grade) FROM student_grade_2 GROUP BY student_id
+    ) AS l_course_id FROM student_grade_2
+GROUP BY student_id ORDER BY student_id;-----------------------------????
+
+SELECT student_id,MIN(course_id),MAX(grade) AS grade FROM student_grade_2;
+
+SELECT student_id,MIN(course_id),MAX(grade) AS grade FROM student_grade_2 GROUP BY student_id;
+
+SELECT student_id,MIN(course_id),MAX(grade) AS grade FROM student_grade_2
+WHERE (student_id,grade) IN (
+    SELECT student_id,MAX(grade) FROM student_grade_2 GROUP BY student_id
+    ) GROUP BY student_id ORDER BY student_id;-----------------------------------------------------?
+
+SELECT student_id, course_id, grade FROM (
+    SELECT *, ROW_NUMBER() OVER(PARTITION BY student_id ORDER BY grade DESC, course_id) AS grade_rnk
+FROM student_grade_2) tmp WHERE grade_rnk = 1 ORDER BY student_id;--------------------------------------
+
+SELECT student_id,course_id,grade FROM (
+    SELECT *,ROW_NUMBER() over (PARTITION BY student_id ORDER BY grade DESC,course_id) AS c FROM student_grade_2
+    ) b WHERE c=1;--------------------------------------------------------------------
+
+SELECT *, ROW_NUMBER() OVER(PARTITION BY student_id ORDER BY grade DESC, course_id) FROM student_grade_2;
+
+SELECT student_id, MIN(course_id), MAX(grade) AS grade FROM student_grade_2 WHERE (student_id, grade) IN (
+    SELECT student_id, MAX(grade) FROM student_grade_2 GROUP BY student_id
+) GROUP BY student_id ORDER BY student_id;
+
+
+------------------------1112 Highest Grade For Each Student-----------------------****************
+
+
 SELECT * FROM post_report;
 
 SELECT * FROM post_report WHERE action_date BETWEEN '2019-07-03' AND '2019-07-05';
@@ -660,6 +720,30 @@ WHERE action_date BETWEEN '2019-07-03' AND '2019-07-05' GROUP BY extra;
 
 
 ------------------------1113 Reported Posts---------------------------------------
+
+
+SELECT * FROM active_business;
+
+SELECT * FROM active_business WHERE occurences>(
+    ;SELECT AVG(b.occurences) FROM active_business b GROUP BY b.event_type;
+    )
+GROUP BY business_id HAVING COUNT(event_type)>1;
+
+SELECT * FROM active_business WHERE occurences>AVG(occurences)
+GROUP BY business_id HAVING COUNT(event_type)>1;
+
+SELECT T.business_id FROM (SELECT E.*, A.event_avg FROM active_business AS E LEFT JOIN (
+    SELECT event_type, AVG(occurences) AS event_avg FROM active_business GROUP BY event_type) AS A
+    ON E.event_type = A.event_type) AS T WHERE T.occurences > T.event_avg
+GROUP BY T.business_id HAVING COUNT(T.event_type) > 1;------------------------------------------??????
+
+SELECT business_id FROM (SELECT a.business_id, a.event_type, a.occurences, b.avg_occ FROM active_business AS a
+LEFT JOIN (SELECT event_type, AVG(occurences) AS avg_occ FROM active_business GROUP BY event_type) AS b
+ON a.event_type = b.event_type) AS tmp WHERE occurences > avg_occ
+GROUP BY business_id HAVING COUNT(*) > 1;---------------------------------------------join????????
+
+
+------------------------1126 Active Businesses------------------------------------***********
 
 
 SELECT * FROM user_activity;
