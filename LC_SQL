@@ -601,51 +601,20 @@ SELECT;
 SELECT * FROM book_book;
 SELECT * FROM book_order;
 
-SELECT b.book_id,b.name FROM book_book b WHERE b.book_id IN (
-    SELECT o.book_id FROM book_order o WHERE DATEDIFF('2019-06-23',o.dispatch_date)<365
-    AND DATEDIFF('2019-06-23',b.available_from)>30
-    GROUP BY o.book_id HAVING SUM(o.quantity)<10);-------------------vvvvvv
+SELECT b.book_id,b.name,SUM(o.quantity) FROM book_book b LEFT JOIN book_order o ON o.book_id=b.book_id
+WHERE IF(o.dispatch_date IS NULL ,0,DATEDIFF('2019-06-23',o.dispatch_date))<365
+AND DATEDIFF('2019-06-23',b.available_from)>30  GROUP BY b.book_id,b.name
+HAVING SUM(IF(o.quantity IS NULL,0,o.quantity))<10;--------------------------
 
-SELECT b.book_id,b.name FROM book_book b,book_order o WHERE b.book_id IN (
-    SELECT b.book_id FROM book_order o LEFT JOIN book_book b ON b.book_id=o.book_id
-    WHERE DATEDIFF('2019-06-23',b.available_from)>30 AND DATEDIFF('2019-06-23',o.dispatch_date)<365)
-    GROUP BY b.book_id HAVING SUM(IF(o.quantity IS NULL,0,o.quantity))<10;
-
-SELECT b.book_id,b.name,SUM(o.quantity) FROM book_book b,book_order o WHERE b.book_id IN (
-    SELECT o.book_id FROM book_order o,book_book b WHERE DATEDIFF('2019-06-23',o.dispatch_date)>365
-                                         AND DATEDIFF('2019-06-23',b.available_from)<30
-    GROUP BY o.book_id HAVING SUM(o.quantity)<10;------------------------vvvvv---------------SUBQUERRY-JOIN?--------
-
-SELECT b.book_id,b.name FROM book_book b WHERE b.book_id NOT IN (
-    SELECT o.book_id FROM book_order o,book_book b WHERE DATEDIFF('2019-06-23',o.dispatch_date)<365
-                                         AND DATEDIFF('2019-06-23',b.available_from)>30
-    GROUP BY o.book_id HAVING SUM(IF(o.quantity IS NULL,0,o.quantity))>10) GROUP BY b.book_id,b.name;--------------?????????-------vvvv----
-
-SELECT b.book_id,b.name FROM book_book b WHERE b.book_id NOT IN (
-    SELECT o.book_id FROM book_order o LEFT JOIN book_book b ON b.book_id=o.order_id
-    WHERE DATEDIFF('2019-06-23',o.dispatch_date)<365 AND DATEDIFF('2019-06-23',b.available_from)>30
-    GROUP BY o.book_id HAVING SUM(IF(o.quantity IS NULL,0,o.quantity))<10);-------
-
-SELECT b.book_id,b.name FROM book_book b LEFT JOIN book_order o ON o.book_id=b.book_id
-WHERE DATEDIFF('2019-06-23',o.dispatch_date)<365 GROUP BY b.book_id,b.name;----------------
- AND DATEDIFF(2019-06-23,b.available_from)>30 AND b.book_id IN (
-    SELECT o.book_id FROM book_order o
-    GROUP BY o.book_id HAVING SUM(o.quantity)<10);
-
-SELECT b.book_id,b.name FROM book_book b LEFT JOIN book_order o
-ON o.book_id = b.book_id WHERE DATEDIFF('2019-06-23',o.dispatch_date)<365
-AND DATEDIFF('2019-06-23',b.available_from) > 30
-GROUP BY b.book_id HAVING SUM(IF(o.quantity IS NULL,0, o.quantity)) < 10;---------------xxxxxxxxxxxx
-
-SELECT book_id,name FROM book_book WHERE DATEDIFF('2019-06-23',available_from)>30;
-AND book_id NOT IN (SELECT DISTINCT book_id FROM book_order
-WHERE DATEDIFF('2019-06-23',dispatch_date)<365
-GROUP BY book_id HAVING SUM(IF(quantity IS NULL,0,quantity))>10);-------------------vvvvvvvvvvv---------
+SELECT b.book_id,b.name FROM book_book b WHERE DATEDIFF('2019-06-23',b.available_from)>30
+AND b.book_id NOT IN (SELECT o.book_id FROM book_order o
+WHERE IF(o.dispatch_date IS NULL,0,DATEDIFF('2019-06-23',o.dispatch_date))>365
+GROUP BY o.book_id HAVING SUM(IF(o.quantity IS NULL,0,quantity))>10);--------------------
 
 SELECT b.book_id,b.name,o.quantity AS quantity FROM book_book b,book_order o
 WHERE DATEDIFF('2019-06-23',b.available_from)>30
 AND DATEDIFF('2019-06-23',o.dispatch_date)<365;
-GROUP BY b.book_id,b.name; HAVING SUM(IF(o.quantity IS NULL,0,o.quantity))<10;----------------
+GROUP BY b.book_id,b.name; HAVING SUM(IF(o.quantity IS NULL,0,o.quantity))<10;-------xxxxx---------
 
 SELECT b.book_id,b.name,SUM(o.quantity) AS quantity FROM book_book b LEFT JOIN book_order o ON b.book_id=o.book_id
 WHERE DATEDIFF('2019-06-23',b.available_from)>30
@@ -658,9 +627,16 @@ GROUP BY b.book_id, b.name HAVING SUM(IF(o.quantity IS NULL,0,o.quantity))<10;--
 
 SELECT * FROM user_count;
 
-SELECT user_id,activity_date AS 'login_date' FROM user_count WHERE DATEDIFF('2019-06-30',activity_date)<90
-AND activity='login' AND activity_date IN (SELECT MIN(activity_date) FROM user_count WHERE activity='login'
-GROUP BY user_id);
+SELECT user_id,MIN(activity_date) AS 'login_date' FROM user_count WHERE DATEDIFF('2019-06-30',activity_date)<90
+AND activity='login' GROUP BY user_id HAVING login_date=MIN(activity_date);------------------xxxxxxx
+
+SELECT user_id,MIN(activity_date) AS 'login_date' FROM user_count
+WHERE DATEDIFF('2019-06-30',activity_date)<90 AND activity='login' GROUP BY user_id; AND activity_date IN (
+SELECT user_id,MIN(activity_date) FROM user_count GROUP BY user_id
+    ) GROUP BY user_id;
+
+SELECT user_id,MIN(activity_date) AS 'login_date' FROM user_count WHERE DATEDIFF('2019-06-30',activity_date)<90
+GROUP BY user_id HAVING login_date=MIN(activity_date);
 
 SELECT user_id,login_date FROM
     (SELECT b.user_id,MIN(b.activity_date) AS login_date FROM user_count b WHERE b.activity='login'
