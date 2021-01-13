@@ -632,11 +632,14 @@ AND activity='login' GROUP BY user_id HAVING login_date=MIN(activity_date);-----
 
 SELECT user_id,MIN(activity_date) AS 'login_date' FROM user_count
 WHERE DATEDIFF('2019-06-30',activity_date)<90 AND activity='login' GROUP BY user_id; AND activity_date IN (
-SELECT user_id,MIN(activity_date) FROM user_count GROUP BY user_id
-    ) GROUP BY user_id;
+SELECT user_id,MIN(activity_date) FROM user_count GROUP BY user_id WHERE activity='login'
+    ) GROUP BY user_id HAVING DATEDIFF('2019-06-30',activity_date)<90;
+
+SELECT user_id,MIN(activity_date) AS activity_date FROM user_count WHERE activity='login'
+     GROUP BY user_id HAVING DATEDIFF('2019-06-30',activity_date)<90;---------vvvv
 
 SELECT user_id,MIN(activity_date) AS 'login_date' FROM user_count WHERE DATEDIFF('2019-06-30',activity_date)<90
-GROUP BY user_id HAVING login_date=MIN(activity_date);
+GROUP BY user_id HAVING login_date=MIN(activity_date);-----------------THINK----------
 
 SELECT user_id,login_date FROM
     (SELECT b.user_id,MIN(b.activity_date) AS login_date FROM user_count b WHERE b.activity='login'
