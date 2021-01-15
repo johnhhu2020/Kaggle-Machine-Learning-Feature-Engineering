@@ -636,7 +636,7 @@ SELECT user_id,MIN(activity_date) FROM user_count GROUP BY user_id WHERE activit
     ) GROUP BY user_id HAVING DATEDIFF('2019-06-30',activity_date)<90;
 
 SELECT user_id,MIN(activity_date) AS activity_date FROM user_count WHERE activity='login'
-     GROUP BY user_id HAVING DATEDIFF('2019-06-30',activity_date)<90;---------vvvv
+     GROUP BY user_id HAVING DATEDIFF('2019-06-30',activity_date)<90;----------------------vvvv?????------
 
 SELECT user_id,MIN(activity_date) AS 'login_date' FROM user_count WHERE DATEDIFF('2019-06-30',activity_date)<90
 GROUP BY user_id HAVING login_date=MIN(activity_date);-----------------THINK----------
@@ -655,32 +655,16 @@ SELECT login_date,COUNT(user_id) AS 'user_count' FROM
 
 SELECT * FROM student_grade_2;
 
-SELECT student_id,MAX(grade) AS max_grade,MIN(course_id) AS course_id FROM student_grade_2
-GROUP BY student_id ORDER BY student_id;
-
-SELECT student_id,MIN(course_id),(
-    SELECT MAX(grade) FROM student_grade_2 GROUP BY student_id
-    ) AS l_course_id FROM student_grade_2
-GROUP BY student_id ORDER BY student_id;-----------------------------????
-
-SELECT student_id,MIN(course_id),MAX(grade) AS grade FROM student_grade_2;
-
-SELECT student_id,MIN(course_id),MAX(grade) AS grade FROM student_grade_2 GROUP BY student_id;
+SELECT student_id,MAX(grade) AS max_grade,MAX(course_id) AS course_id FROM student_grade_2
+GROUP BY student_id ORDER BY student_id;-----------------------
 
 SELECT student_id,MIN(course_id),MAX(grade) AS grade FROM student_grade_2
-WHERE (student_id,grade) IN (
-    SELECT student_id,MAX(grade) FROM student_grade_2 GROUP BY student_id
-    ) GROUP BY student_id ORDER BY student_id;-----------------------------------------------------?
-
-SELECT student_id, course_id, grade FROM (
-    SELECT *, ROW_NUMBER() OVER(PARTITION BY student_id ORDER BY grade DESC, course_id) AS grade_rnk
-FROM student_grade_2) tmp WHERE grade_rnk = 1 ORDER BY student_id;--------------------------------------
+WHERE (student_id,grade) IN (SELECT student_id,MAX(grade) FROM student_grade_2 GROUP BY student_id
+    ) GROUP BY student_id ORDER BY student_id;-----------------------------------------
 
 SELECT student_id,course_id,grade FROM (
     SELECT *,ROW_NUMBER() over (PARTITION BY student_id ORDER BY grade DESC,course_id) AS c FROM student_grade_2
-    ) b WHERE c=1;--------------------------------------------------------------------
-
-SELECT *, ROW_NUMBER() OVER(PARTITION BY student_id ORDER BY grade DESC, course_id) FROM student_grade_2;
+    ) y WHERE c=1;--------------------------------------------------------------------
 
 SELECT student_id, MIN(course_id), MAX(grade) AS grade FROM student_grade_2 WHERE (student_id, grade) IN (
     SELECT student_id, MAX(grade) FROM student_grade_2 GROUP BY student_id
@@ -703,23 +687,23 @@ WHERE action_date BETWEEN '2019-07-03' AND '2019-07-05' GROUP BY extra;
 
 SELECT * FROM active_business;
 
-SELECT * FROM active_business WHERE occurences>(
-    ;SELECT AVG(b.occurences) FROM active_business b GROUP BY b.event_type;
-    )
-GROUP BY business_id HAVING COUNT(event_type)>1;
+SELECT a.business_id FROM active_business a WHERE a.occurences > (
+    SELECT b.event_type,AVG(b.occurences) FROM active_business b GROUP BY b.event_type
+    ) GROUP BY a.business_id HAVING COUNT(a.event_type)>1;
 
-SELECT * FROM active_business WHERE occurences>AVG(occurences)
-GROUP BY business_id HAVING COUNT(event_type)>1;
+SELECT business_id,MAX(occurences) FROM active_business WHERE event_type IN
+  (SELECT b.event_type,AVG(b.occurences) AS ave_occu FROM active_business b GROUP BY b.event_type)
+AND occurences > ave_occu GROUP BY business_id HAVING COUNT(event_type)>1;
 
-SELECT T.business_id FROM (SELECT E.*, A.event_avg FROM active_business AS E LEFT JOIN (
-    SELECT event_type, AVG(occurences) AS event_avg FROM active_business GROUP BY event_type) AS A
-    ON E.event_type = A.event_type) AS T WHERE T.occurences > T.event_avg
-GROUP BY T.business_id HAVING COUNT(T.event_type) > 1;------------------------------------------??????
+SELECT T.business_id FROM (SELECT E.*, A.event_avg FROM active_business E LEFT JOIN (
+    SELECT event_type, AVG(occurences) AS event_avg FROM active_business GROUP BY event_type) A
+    ON E.event_type = A.event_type) T WHERE T.occurences > T.event_avg
+GROUP BY T.business_id HAVING COUNT(T.event_type) > 1;----------------------------??????
 
-SELECT business_id FROM (SELECT a.business_id, a.event_type, a.occurences, b.avg_occ FROM active_business AS a
-LEFT JOIN (SELECT event_type, AVG(occurences) AS avg_occ FROM active_business GROUP BY event_type) AS b
-ON a.event_type = b.event_type) AS tmp WHERE occurences > avg_occ
-GROUP BY business_id HAVING COUNT(*) > 1;---------------------------------------------join????????
+SELECT business_id FROM (SELECT a.business_id,a.event_type,a.occurences,b.avg_occ FROM active_business a
+LEFT JOIN (SELECT event_type,AVG(occurences) AS avg_occ FROM active_business GROUP BY event_type) b
+ON a.event_type = b.event_type) tmp
+WHERE occurences > avg_occ GROUP BY business_id HAVING COUNT(*) > 1;----------------------------join????????
 
 
 ------------------------1126 Active Businesses------------------------------------***********
