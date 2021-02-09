@@ -1,3 +1,3 @@
-Ubuntu 20 MySQL 8 JupyterLab
+# Ubuntu JupyterLab
 
-data collected from LeetCode & Kaggle & Google
+# data collected from LeetCode & Kaggle & Google
